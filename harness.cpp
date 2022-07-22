@@ -12,10 +12,13 @@ Adafruit_GPS GPS;
 
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    char* sentence = (char*) calloc(size + 3, sizeof(uint8_t));
+    char sentence[5000];
+    //char* sentence = (char*) calloc(size + 3, sizeof(uint8_t));
     memcpy(sentence, data, size);
+    sentence[size] = 0;
     GPS.addChecksum(sentence);
     //printf("%s\n", sentence);
     GPS.parse(sentence); // this also sets the newNMEAreceived() flag to false
+    //free(sentence);
     return 0;
 }
