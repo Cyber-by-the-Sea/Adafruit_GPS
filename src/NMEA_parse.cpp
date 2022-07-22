@@ -189,9 +189,10 @@ bool Adafruit_GPS::parse(char *nmea) {
     p = strchr(p, ',') + 1;
     if (p == (char*) 0x1) return false;
     // skip 12 Satellite PDNs without interpreting them
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) {
       p = strchr(p, ',') + 1;
       if (p == (char*) 0x1) return false;
+    }
     if (!isEmpty(p))
       PDOP = atof(p);
     p = strchr(p, ',') + 1;
