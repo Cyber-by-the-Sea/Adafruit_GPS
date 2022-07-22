@@ -854,7 +854,7 @@ bool Adafruit_GPS::parseAntenna(char *p) {
 */
 /**************************************************************************/
 bool Adafruit_GPS::isEmpty(char *pStart) {
-  if (',' != *pStart && '*' != *pStart && pStart != NULL)
+  if (pStart != NULL && pStart != (char*) 0x1 && ',' != *pStart && '*' != *pStart)
     return false;
   else
     return true;
