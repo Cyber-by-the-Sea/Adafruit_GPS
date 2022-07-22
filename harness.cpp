@@ -12,6 +12,9 @@ Adafruit_GPS GPS;
 
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    if(size > 4096) {
+        return 0;
+    }
     char sentence[5000];
     //char* sentence = (char*) calloc(size + 3, sizeof(uint8_t));
     memcpy(sentence, data, size);
