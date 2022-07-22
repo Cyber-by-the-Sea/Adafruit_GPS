@@ -9,7 +9,9 @@ Adafruit_GPS GPS;
 
 #define FUZZER_MAX_BUFFER_LEN MINMEA_MAX_SENTENCE_LENGTH + 3 + 1
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     char* sentence = (char*) calloc(size + 3, sizeof(uint8_t));
     memcpy(sentence, data, size);
     GPS.addChecksum(sentence);

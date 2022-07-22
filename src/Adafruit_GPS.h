@@ -26,13 +26,16 @@
 
 #include <Adafruit_PMTK.h>
 
+#include <algorithm>
+
 #include <cstdint>
 #include <cstddef>
 #include <ctime>
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
-#include <cmath>
+//#include <cmath>
+#include <math.h>
 #include <cctype>
 
 #include <string.h>
