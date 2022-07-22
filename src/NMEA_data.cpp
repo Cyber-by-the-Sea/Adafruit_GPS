@@ -48,7 +48,6 @@
 */
 /**************************************************************************/
 void Adafruit_GPS::newDataValue(nmea_index_t idx, nmea_float_t v) {
-#ifdef NMEA_EXTENSIONS
   //  Serial.println();Serial.print(idx);Serial.print(", "); Serial.println(v);
   val[idx].latest = v; // update the value
 
@@ -59,8 +58,8 @@ void Adafruit_GPS::newDataValue(nmea_index_t idx, nmea_float_t v) {
   }
   // weighting factor for smoothing depends on delta t / tau
   nmea_float_t w =
-      min((nmea_float_t)1.0,
-          (nmea_float_t)(millis() - val[idx].lastUpdate) / val[idx].response);
+      std::min((nmea_float_t)1.0,
+          (nmea_float_t)(time(NULL) - val[idx].lastUpdate) / val[idx].response);
   // default smoothing
   val[idx].smoothed = (1.0f - w) * val[idx].smoothed + w * v;
   // special smoothing for some angle types
@@ -79,9 +78,9 @@ void Adafruit_GPS::newDataValue(nmea_index_t idx, nmea_float_t v) {
   if (val[idx].type == NMEA_HHMMSS)
     val[idx].smoothed = val[idx].latest;
 
-  val[idx].lastUpdate = millis(); // take a time stamp
+  val[idx].lastUpdate = time(NULL); // take a time stamp
   if (val[idx].hist) {            // there's a history struct for this tag
-    unsigned long seconds = (millis() - val[idx].hist->lastHistory) / 1000;
+    unsigned long seconds = (time(NULL) - val[idx].hist->lastHistory) / 1000;
     // do an update if the time has come, or if this is the first time through
     if (seconds >= val[idx].hist->historyInterval ||
         val[idx].hist->lastHistory == 0) {
@@ -94,10 +93,9 @@ void Adafruit_GPS::newDataValue(nmea_index_t idx, nmea_float_t v) {
       // integer, and based on the smoothed value.
       val[idx].hist->data[val[idx].hist->n - 1] =
           val[idx].hist->scale * (val[idx].smoothed - val[idx].hist->offset);
-      val[idx].hist->lastHistory = millis();
+      val[idx].hist->lastHistory = time(NULL);
     }
   }
-#endif // NMEA_EXTENSIONS
 }
 
 /**************************************************************************/
@@ -111,7 +109,6 @@ void Adafruit_GPS::newDataValue(nmea_index_t idx, nmea_float_t v) {
 */
 /**************************************************************************/
 void Adafruit_GPS::data_init() {
-#ifdef NMEA_EXTENSIONS
   // fill all the data values with nothing
   static char c[] = "NUL";
   for (int i = 0; i < (int)NMEA_MAX_INDEX; i++) {
@@ -294,10 +291,8 @@ void Adafruit_GPS::data_init() {
   static char BAROMETERfmt[] = "%6.0f";
   static char BAROMETERunit[] = "Pa";
   initDataValue(NMEA_BAROMETER, BAROMETERlabel, BAROMETERfmt, BAROMETERunit);
-#endif // NMEA_EXTENSIONS
 }
 
-#ifdef NMEA_EXTENSIONS
 /**************************************************************************/
 /*!
     @brief Clearer approach to retrieving NMEA values by allowing calls that
@@ -384,7 +379,7 @@ nmea_history_t *Adafruit_GPS::initHistory(nmea_index_t idx, nmea_float_t scale,
                                           nmea_float_t offset,
                                           unsigned historyInterval,
                                           unsigned historyN) {
-  historyN = max((unsigned)10, historyN);
+  historyN = std::max((unsigned)10, historyN);
   if (idx < NMEA_MAX_INDEX) {
     // remove any existing history
     if (val[idx].hist != NULL)
@@ -441,57 +436,7 @@ void Adafruit_GPS::removeHistory(nmea_index_t idx) {
 */
 /**************************************************************************/
 void Adafruit_GPS::showDataValue(nmea_index_t idx, int n) {
-  Serial.print("idx: ");
-  if (idx < 10)
-    Serial.print(" ");
-  Serial.print(idx);
-  Serial.print(", ");
-  Serial.print(val[idx].label);
-  Serial.print(", ");
-  Serial.print(val[idx].latest, 4);
-  Serial.print(", ");
-  Serial.print(val[idx].smoothed, 4);
-  Serial.print(", at ");
-  Serial.print(val[idx].lastUpdate);
-  Serial.print(" ms, tau = ");
-  Serial.print(val[idx].response);
-  Serial.print(" ms, type:");
-  Serial.print(val[idx].type);
-  Serial.print(",  ockam:");
-  Serial.print(val[idx].ockam);
-  if (val[idx].hist) {
-    Serial.print("\n     History at ");
-    Serial.print(val[idx].hist->historyInterval);
-    Serial.print(" second intervals:  ");
-    Serial.print(val[idx].hist->data[val[idx].hist->n - 1]);
-    for (unsigned i = val[idx].hist->n - 2;
-         i >= max(val[idx].hist->n - n, (unsigned)0);
-         i--) { // most recent first
-      Serial.print(", ");
-      Serial.print(val[idx].hist->data[i]);
-    }
-  }
-  Serial.print("\n");
-  if (idx == NMEA_LAT) {
-    Serial.print("     latitude (DDMM.mmmm): ");
-    Serial.print(latitude, 4);
-    Serial.print(", lat: ");
-    Serial.print(lat);
-    Serial.print(", latitudeDegrees: ");
-    Serial.print(latitudeDegrees, 8);
-    Serial.print(", latitude_fixed: ");
-    Serial.println(latitude_fixed);
-  }
-  if (idx == NMEA_LON) {
-    Serial.print("     longitude (DDMM.mmmm): ");
-    Serial.print(longitude, 4);
-    Serial.print(", lon: ");
-    Serial.print(lon);
-    Serial.print(", longitudeDegrees: ");
-    Serial.print(longitudeDegrees, 8);
-    Serial.print(", longitude_fixed: ");
-    Serial.println(longitude_fixed);
-  }
+  return;
 }
 
 /**************************************************************************/
@@ -567,4 +512,3 @@ nmea_float_t Adafruit_GPS::compassAngle(nmea_float_t s, nmea_float_t c) {
   }
   return ang;
 }
-#endif // NMEA_EXTENSIONS

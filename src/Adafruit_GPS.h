@@ -24,20 +24,49 @@
 #ifndef _ADAFRUIT_GPS_H
 #define _ADAFRUIT_GPS_H
 
+#include <Adafruit_PMTK.h>
+
+#include <cstdint>
+#include <cstddef>
+#include <ctime>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+#include <cmath>
+#include <cctype>
+
+#include <string.h>
+
+/*
+println
+strchr
+isdigit
+isalpha
+millis
+strcmp
+sprintf
+<cstdio>
+<cstring>
+RAD_TO_DEG
+sin,cos,max
+malloc
+<cstdlib>
+atof
+strncpy
+*/
+
+
+#define byte uint8_t
+#define RAD_TO_DEG 57.2957786
+
+
+
 /**************************************************************************/
 /**
  Comment out the definition of NMEA_EXTENSIONS to make the library use as
  little memory as possible for GPS functionality only. The ARDUINO_ARCH_AVR
  test should leave it out of any compilations for the UNO and similar. */
-#ifndef NMEA_EXTRAS // inject on the compile command line to force extensions
-#ifndef ARDUINO_ARCH_AVR
-#define NMEA_EXTENSIONS ///< if defined will include more NMEA sentences
-#endif
-#else
-#if (NMEA_EXTRAS > 0)
-#define NMEA_EXTENSIONS ///< if defined will include more NMEA sentences
-#endif
-#endif
+
 
 #if (defined(__AVR__) || defined(ESP8266)) && !defined(NO_SW_SERIAL)
 #define USE_SW_SERIAL ///< insert line `#define NO_SW_SERIAL` before this header
@@ -55,14 +84,7 @@
 #define NMEA_MAX_SOURCE_ID                                                     \
   3 ///< maximum length of a source ID name, including terminating 0
 
-#include "Arduino.h"
-#ifdef USE_SW_SERIAL
-#include <SoftwareSerial.h>
-#endif
-#include <Adafruit_PMTK.h>
 #include <NMEA_data.h>
-#include <SPI.h>
-#include <Wire.h>
 
 /// type for resulting code from running check()
 typedef enum {
@@ -80,18 +102,10 @@ typedef enum {
 /*!
     @brief  The GPS class
 */
-class Adafruit_GPS : public Print {
+class Adafruit_GPS {
 public:
   // Adafruit_GPS.cpp
-  bool begin(uint32_t baud_or_i2caddr);
 
-#ifdef USE_SW_SERIAL
-  Adafruit_GPS(SoftwareSerial *ser); // Constructor when using SoftwareSerial
-#endif
-  Adafruit_GPS(HardwareSerial *ser); // Constructor when using HardwareSerial
-  Adafruit_GPS(Stream *data);        // Constructor when using Stream
-  Adafruit_GPS(TwoWire *theWire);    // Constructor when using I2C
-  Adafruit_GPS(SPIClass *theSPI, int8_t cspin); // Constructor when using SPI
   Adafruit_GPS(); // Constructor for no communications, just data storage
   void common_init(void);
   virtual ~Adafruit_GPS();
@@ -103,7 +117,7 @@ public:
   bool newNMEAreceived();
   void pause(bool b);
   char *lastNMEA(void);
-  bool waitForSentence(const char *wait, uint8_t max = MAXWAITSENTENCE,
+  bool waitForSentence(const char *wait, uint8_t max = 10,
                        bool usingInterrupts = false);
   bool LOCUS_StartLogger(void);
   bool LOCUS_StopLogger(void);
@@ -122,15 +136,12 @@ public:
   uint8_t parseHex(char c);
 
   // NMEA_build.cpp
-#ifdef NMEA_EXTENSIONS
   char *build(char *nmea, const char *thisSource, const char *thisSentence,
               char ref = 'R', bool noCRLF = false);
-#endif
   void addChecksum(char *buff);
 
   // NMEA_data.cpp
   void newDataValue(nmea_index_t tag, nmea_float_t v);
-#ifdef NMEA_EXTENSIONS
   nmea_float_t get(nmea_index_t idx);
   nmea_float_t getSmoothed(nmea_index_t idx);
   void initDataValue(nmea_index_t idx, char *label = NULL, char *fmt = NULL,
@@ -143,7 +154,6 @@ public:
   void removeHistory(nmea_index_t idx);
   void showDataValue(nmea_index_t idx, int n = 7);
   bool isCompoundAngle(nmea_index_t idx);
-#endif
   nmea_float_t boatAngle(nmea_float_t s, nmea_float_t c);
   nmea_float_t compassAngle(nmea_float_t s, nmea_float_t c);
 
@@ -212,8 +222,6 @@ public:
   uint8_t LOCUS_speed;    ///< Speed setting
   uint8_t LOCUS_status;   ///< 0: Logging, 1: Stop logging
   uint8_t LOCUS_percent;  ///< Log life used percentage
-
-#ifdef NMEA_EXTENSIONS
   // NMEA additional public variables
   nmea_datavalue_t
       val[NMEA_MAX_INDEX]; ///< an array of data value structs, val[0] = most
@@ -232,7 +240,7 @@ public:
   int txtTot = 0;        ///< total TXT sentences in group
   int txtID = 0;         ///< id of the text message
   int txtN = 0;          ///< the TXT sentence number
-#endif                   // NMEA_EXTENSIONS
+                // NMEA_EXTENSIONS
 
 private:
   //   void parseLat(char *);
@@ -255,7 +263,7 @@ private:
   // used by check() for validity tests, room for future expansion
   const char *sources[7] = {"II", "WI", "GP", "PG",
                             "GN", "P",  "ZZZ"}; ///< valid source ids
-#ifdef NMEA_EXTENSIONS
+
   const char *sentences_parsed[21] = {"GGA", "GLL", "GSA", "RMC", "DBT", "HDM",
                                       "HDT", "MDA", "MTW", "MWV", "RMB", "TOP",
                                       "TXT", "VHW", "VLW", "VPW", "VWR", "WCV",
@@ -263,38 +271,24 @@ private:
   const char *sentences_known[15] = {
       "APB", "DPT", "GSV", "HDG", "MWD", "ROT",
       "RPM", "RSA", "VDR", "VTG", "ZDA", "ZZZ"}; ///< known, but not parseable
-#else // make the lists short to save memory
-  const char *sentences_parsed[6] = {"GGA", "GLL", "GSA", "RMC",
-                                     "TOP", "ZZZ"}; ///< parseable sentence ids
-  const char *sentences_known[4] = {"DBT", "HDM", "HDT",
-                                    "ZZZ"}; ///< known, but not parseable
-#endif
+
 
   // Make all of these times far in the past by setting them near the middle of
-  // the millis() range. Timing assumes that sentences are parsed promptly.
+  // the time(NULL) range. Timing assumes that sentences are parsed promptly.
   uint32_t lastUpdate =
-      2000000000L; ///< millis() when last full sentence successfully parsed
-  uint32_t lastFix = 2000000000L;  ///< millis() when last fix received
-  uint32_t lastTime = 2000000000L; ///< millis() when last time received
-  uint32_t lastDate = 2000000000L; ///< millis() when last date received
+      2000000000L; ///< time(NULL) when last full sentence successfully parsed
+  uint32_t lastFix = 2000000000L;  ///< time(NULL) when last fix received
+  uint32_t lastTime = 2000000000L; ///< time(NULL) when last time received
+  uint32_t lastDate = 2000000000L; ///< time(NULL) when last date received
   uint32_t recvdTime =
-      2000000000L; ///< millis() when last full sentence received
-  uint32_t sentTime = 2000000000L; ///< millis() when first character of last
+      2000000000L; ///< time(NULL) when last full sentence received
+  uint32_t sentTime = 2000000000L; ///< time(NULL) when first character of last
                                    ///< full sentence received
   bool paused;
 
   uint8_t parseResponse(char *response);
-#ifdef USE_SW_SERIAL
-  SoftwareSerial *gpsSwSerial;
-#endif
   bool noComms = false;
-  HardwareSerial *gpsHwSerial;
-  Stream *gpsStream;
-  TwoWire *gpsI2C;
-  SPIClass *gpsSPI;
   int8_t gpsSPI_cs = -1;
-  SPISettings gpsSPI_settings =
-      SPISettings(1000000, MSBFIRST, SPI_MODE0); // default
   char _spibuffer[GPS_MAX_SPI_TRANSFER]; // for when we write data, we need to
                                          // read it too!
   uint8_t _i2caddr;

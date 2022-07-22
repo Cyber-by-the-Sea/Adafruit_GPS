@@ -183,7 +183,6 @@ bool Adafruit_GPS::parse(char *nmea) {
     parseAntenna(p);
   }
 
-#ifdef NMEA_EXTENSIONS // Sentences not required for basic GPS functionality
   else if (!strcmp(thisSentence, "APB")) { //*******************************APB
     // from Actisense NGW-1 from SH CP150C
     return false;
@@ -544,7 +543,6 @@ bool Adafruit_GPS::parse(char *nmea) {
     // from Actisense NGW-1
     return false;
   }
-#endif // NMEA_EXTENSIONS
 
   else {
     return false; // didn't find the required sentence definition
@@ -553,7 +551,7 @@ bool Adafruit_GPS::parse(char *nmea) {
   // Record the successful parsing of where the last data came from and when
   strcpy(lastSource, thisSource);
   strcpy(lastSentence, thisSentence);
-  lastUpdate = millis();
+  lastUpdate = time(NULL);
   return true;
 }
 
@@ -760,17 +758,17 @@ char *Adafruit_GPS::parseStr(char *buff, char *p, int n) {
   char *e = strchr(p, ',');
   int len = 0;
   if (e) {
-    len = min(int(e - p), n - 1);
+    len = std::min(int(e - p), n - 1);
     strncpy(buff, p, len); // copy up to the comma
     buff[len] = 0;
   } else {
     e = strchr(p, '*');
     if (e) {
-      len = min(int(e - p), n - 1);
+      len = std::min(int(e - p), n - 1);
       strncpy(buff, p, len); // or up to the *
       buff[e - p] = 0;
     } else {
-      len = min((int)strlen(p), n - 1);
+      len = std::min((int)strlen(p), n - 1);
       strncpy(buff, p, len); // or to the end or max capacity
     }
   }
@@ -792,7 +790,7 @@ bool Adafruit_GPS::parseTime(char *p) {
     minute = (time % 10000) / 100;
     seconds = (time % 100);
     char *dec = strchr(p, '.');
-    char *comstar = min(strchr(p, ','), strchr(p, '*'));
+    char *comstar = std::min(strchr(p, ','), strchr(p, '*'));
     if (dec != NULL && comstar != NULL && dec < comstar)
       milliseconds = atof(dec) * 1000;
     else

@@ -30,7 +30,6 @@
 
 #include <Adafruit_GPS.h>
 
-#ifdef NMEA_EXTENSIONS
 /**************************************************************************/
 /*!
     @brief Build an NMEA sentence string based on the relevant variables.
@@ -574,8 +573,6 @@ char *Adafruit_GPS::build(char *nmea, const char *thisSource,
   }
   return nmea; // return pointer to finished product
 }
-
-#endif // NMEA_EXTENSIONS
 
 /**************************************************************************/
 /*!

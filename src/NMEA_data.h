@@ -5,7 +5,6 @@
 /**************************************************************************/
 #ifndef _NMEA_DATA_H
 #define _NMEA_DATA_H
-#include "Arduino.h"
 
 #define NMEA_MAX_WP_ID                                                         \
   20 ///< maximum length of a waypoint ID name, including terminating 0
@@ -51,7 +50,7 @@ typedef NMEA_FLOAT_T
 typedef struct {
   int16_t *data = NULL;          ///< array of ints, oldest first
   unsigned n = 0;                ///< number of history array elements
-  uint32_t lastHistory = 0;      ///< millis() when history was last updated
+  uint32_t lastHistory = 0;      ///< time(NULL) when history was last updated
   uint16_t historyInterval = 20; ///< seconds between history updates
   nmea_float_t scale = 1.0;      ///< history = (smoothed - offset) * scale
   nmea_float_t offset = 0.0;     ///< value = (float) history / scale + offset
@@ -97,7 +96,7 @@ typedef struct {
   nmea_float_t latest = 0.0; ///< the most recently obtained value
   nmea_float_t smoothed =
       0.0;                  ///< smoothed value based on weight of dt/response
-  uint32_t lastUpdate = 0;  ///< millis() when latest was last set
+  uint32_t lastUpdate = 0;  ///< time(NULL) when latest was last set
   uint16_t response = 1000; ///< time constant in millis for smoothing
   nmea_value_type_t type =
       NMEA_SIMPLE_FLOAT; ///< type of float data value represented
