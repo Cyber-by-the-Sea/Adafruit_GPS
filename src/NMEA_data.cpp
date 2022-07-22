@@ -58,7 +58,7 @@ void Adafruit_GPS::newDataValue(nmea_index_t idx, nmea_float_t v) {
   }
   // weighting factor for smoothing depends on delta t / tau
   nmea_float_t w =
-      std::min((nmea_float_t)1.0,
+      min((nmea_float_t)1.0,
           (nmea_float_t)(time(NULL) - val[idx].lastUpdate) / val[idx].response);
   // default smoothing
   val[idx].smoothed = (1.0f - w) * val[idx].smoothed + w * v;
@@ -379,7 +379,7 @@ nmea_history_t *Adafruit_GPS::initHistory(nmea_index_t idx, nmea_float_t scale,
                                           nmea_float_t offset,
                                           unsigned historyInterval,
                                           unsigned historyN) {
-  historyN = std::max((unsigned)10, historyN);
+  historyN = max((unsigned)10, historyN);
   if (idx < NMEA_MAX_INDEX) {
     // remove any existing history
     if (val[idx].hist != NULL)
